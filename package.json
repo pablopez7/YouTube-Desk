@@ -1,0 +1,74 @@
+{
+  "name": "youtube-desktop",
+  "version": "1.0.0",
+  "description": "A dedicated YouTube desktop application built with Electron, React, TypeScript, and Vite",
+  "author": "Pablo Lopez",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/youtube-desktop"
+  },
+  "keywords": [
+    "youtube",
+    "electron",
+    "desktop",
+    "react",
+    "typescript",
+    "vite"
+  ],
+  "main": "dist-electron/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:renderer": "vite -c vite.config.renderer.ts",
+    "start": "electron .",
+    "build:electron": "npx esbuild src/main/main.ts --bundle --platform=node --format=esm --outfile=dist-electron/main.js --external:electron --external:electron-store && npx esbuild src/preload/preload.ts --bundle --platform=node --format=cjs --outfile=dist-electron/preload.js --external:electron",
+    "build": "npm run build:electron && vite build -c vite.config.renderer.ts && electron-builder",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "clsx": "^2.1.0",
+    "electron-store": "^8.2.0",
+    "lucide-react": "^0.368.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwind-merge": "^2.2.2",
+    "@dnd-kit/core": "^6.1.0",
+    "@dnd-kit/sortable": "^8.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "zustand": "^4.5.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.19",
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0",
+    "vite-plugin-electron": "^0.28.4",
+    "vite-plugin-electron-renderer": "^0.14.5"
+  },
+  "build": {
+    "appId": "com.youtube.desktop",
+    "productName": "YouTube Desktop",
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.video"
+    },
+    "files": [
+      "dist-electron/**/*",
+      "dist/**/*"
+    ]
+  }
+}
