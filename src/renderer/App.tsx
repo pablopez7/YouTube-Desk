@@ -3,8 +3,26 @@ import { TitleBar } from './components/TitleBar'
 import { BrowserView } from './components/BrowserView'
 import { useAppStore } from './store'
 
+// Extract video ID from YouTube URL
+const extractVideoId = (url: string): string | null => {
+    if (!url) return null
+
+    const patterns = [
+        /[?&]v=([^&]+)/,           // youtube.com/watch?v=ID
+        /youtu\.be\/([^?&]+)/,      // youtu.be/ID
+        /shorts\/([^?&]+)/,         // youtube.com/shorts/ID
+        /embed\/([^?&]+)/           // youtube.com/embed/ID
+    ]
+
+    for (const pattern of patterns) {
+        const match = url.match(pattern)
+        if (match) return match[1]
+    }
+    return null
+}
+
 function App() {
-    const { tabs, activeTabId, addTab, closeTab, setActiveTab } = useAppStore()
+    const { tabs, activeTabId, addTab, closeTab } = useAppStore()
 
     // Use ref to avoid re-registering listener when addTab changes
     const addTabRef = useRef(addTab)
@@ -14,9 +32,30 @@ function App() {
     useEffect(() => {
         // Only register if running in Electron environment
         if (window.electron?.onOpenTab) {
-            const unsubscribe = window.electron.onOpenTab((url) => {
+            const unsubscribe = window.electron.onOpenTab(async (url) => {
                 console.log('[App] on-open-tab received:', url)
-                addTabRef.current(url, false) // Open in background
+
+                // Extract video ID to fetch title and thumbnail IMMEDIATELY
+                const videoId = extractVideoId(url)
+                let title = 'YouTube'
+                let thumbnail: string | undefined
+
+                if (videoId && window.electron?.getVideoTitle) {
+                    console.log('[App] Fetching info for new tab video:', videoId)
+                    try {
+                        const result = await window.electron.getVideoTitle(videoId)
+                        if (result) {
+                            title = result.title || 'YouTube'
+                            thumbnail = result.thumbnail || undefined
+                            console.log('[App] Got info for new tab:', title, thumbnail)
+                        }
+                    } catch (e) {
+                        console.warn('[App] Failed to fetch info for new tab:', e)
+                    }
+                }
+
+                // Create the tab with the correct title and thumbnail (in background)
+                addTabRef.current(url, false, title, thumbnail)
             })
             return unsubscribe
         }

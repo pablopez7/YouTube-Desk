@@ -20,6 +20,43 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
+// YouTube Logo SVG Component (fallback when no thumbnail)
+const YouTubeLogo = () => (
+    <svg
+        viewBox="0 0 24 24"
+        className="w-4 h-4 flex-shrink-0"
+        fill="currentColor"
+    >
+        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+    </svg>
+)
+
+// Tab Icon Component - shows thumbnail or YouTube logo
+const TabIcon = ({ thumbnail, isActive }: { thumbnail?: string; isActive: boolean }) => {
+    if (thumbnail) {
+        return (
+            <img
+                src={thumbnail}
+                alt=""
+                className="w-5 h-5 rounded-sm object-cover flex-shrink-0"
+                onError={(e) => {
+                    // If image fails to load, hide it
+                    (e.target as HTMLImageElement).style.display = 'none'
+                }}
+            />
+        )
+    }
+
+    return (
+        <span className={clsx(
+            "transition-colors",
+            isActive ? "text-red-500" : "text-gray-500"
+        )}>
+            <YouTubeLogo />
+        </span>
+    )
+}
+
 // --- Single Tab Component ---
 function SortableTab({ tab, isActive, onActivate, onClose }: { tab: any, isActive: boolean, onActivate: () => void, onClose: (e: React.MouseEvent) => void }) {
     const {
@@ -43,22 +80,29 @@ function SortableTab({ tab, isActive, onActivate, onClose }: { tab: any, isActiv
             {...listeners}
             onClick={onActivate}
             className={clsx(
-                "group relative flex items-center h-[26px] min-w-[70px] max-w-[150px] px-2 rounded-t-md transition-colors cursor-default text-[11px] no-drag select-none",
-                isActive ? "bg-youtube-surface text-white z-10" : "bg-transparent text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                "group relative flex items-center gap-1.5 h-[30px] min-w-[100px] max-w-[200px] px-2.5 rounded-t-lg transition-all cursor-default text-[12px] no-drag select-none border-b-2",
+                isActive
+                    ? "bg-youtube-surface text-white z-10 border-red-500 shadow-lg shadow-red-500/20"
+                    : "bg-transparent text-gray-400 hover:bg-white/5 hover:text-gray-200 border-transparent"
             )}
         >
+            {/* Tab Icon (thumbnail or YouTube logo) */}
+            <TabIcon thumbnail={tab.thumbnail} isActive={isActive} />
+
+            {/* Tab Title */}
             <div className="flex-1 truncate font-medium pr-4 pointer-events-none">
                 {tab.title || 'YouTube'}
             </div>
 
+            {/* Close Button */}
             <button
                 className={clsx(
-                    "absolute right-1 p-0.5 rounded-full opacity-0 group-hover:opacity-100 hover:bg-white/20 transition-all",
+                    "absolute right-1.5 p-0.5 rounded-full opacity-0 group-hover:opacity-100 hover:bg-white/20 transition-all",
                     isActive && "opacity-100"
                 )}
                 onClick={onClose}
             >
-                <X size={10} />
+                <X size={12} />
             </button>
         </div>
     )
@@ -117,10 +161,10 @@ export const TabSystem: React.FC = () => {
 
             <button
                 onClick={() => addTab()}
-                className="flex items-center justify-center w-6 h-6 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors no-drag"
+                className="flex items-center justify-center w-7 h-7 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors no-drag ml-1"
                 title="New Tab"
             >
-                <Plus size={14} />
+                <Plus size={16} />
             </button>
         </div>
     )

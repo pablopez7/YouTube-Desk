@@ -6,6 +6,8 @@ export interface Tab {
     title: string
     url: string
     isLoading?: boolean
+    thumbnail?: string  // Video thumbnail URL from oEmbed
+    zoomLevel?: number  // Zoom factor (1.0 = 100%)
 }
 
 // Separate state for the active tab's capabilities (not persisted)
@@ -25,7 +27,7 @@ interface AppState {
     navigationSignal: { action: NavigationAction, id: string } // id is random to trigger effect
     activeTabState: ActiveTabState
 
-    addTab: (url?: string, active?: boolean) => void
+    addTab: (url?: string, active?: boolean, title?: string, thumbnail?: string) => void
     closeTab: (id: string) => void
     setActiveTab: (id: string) => void
     updateTab: (id: string, data: Partial<Tab>) => void
@@ -46,11 +48,12 @@ export const useAppStore = create<AppState>()(
             navigationSignal: { action: null, id: '' },
             activeTabState: { canGoBack: false, canGoForward: false, isLoading: false },
 
-            addTab: (url = 'https://www.youtube.com', active = true) => {
+            addTab: (url = 'https://www.youtube.com', active = true, title = 'YouTube', thumbnail?: string) => {
                 const newTab: Tab = {
                     id: crypto.randomUUID(),
-                    title: 'YouTube',
+                    title,
                     url,
+                    thumbnail,
                 }
                 set((state) => ({
                     tabs: [...state.tabs, newTab],

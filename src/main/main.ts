@@ -60,6 +60,7 @@ async function createWindow() {
         frame: false, // Custom titlebar
         backgroundColor: '#0f0f0f', // YouTube dark background
         titleBarStyle: 'hidden',
+        roundedCorners: true, // Rounded window corners
         webPreferences: {
             preload,
             nodeIntegration: false,
@@ -78,9 +79,6 @@ async function createWindow() {
     } else {
         win.loadFile(path.join(dist, 'index.html'))
     }
-
-    // DEBUG: Open DevTools to see errors
-    win.webContents.openDevTools()
 
     // Note: We don't use setWindowOpenHandler here because we want webview's
     // new-window event to handle Ctrl+Click. The main window itself shouldn't open popups.
@@ -258,6 +256,31 @@ ipcMain.handle('window-close', () => {
 
 ipcMain.handle('is-window-maximized', () => {
     return win?.isMaximized()
+})
+
+// Fetch YouTube video info via oEmbed API (runs in main process to avoid CORS)
+ipcMain.handle('get-video-title', async (_, videoId: string) => {
+    try {
+        const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
+        const response = await fetch(oembedUrl)
+
+        if (!response.ok) {
+            console.log('[Main] oEmbed request failed:', response.status)
+            return null
+        }
+
+        const data = await response.json()
+        console.log('[Main] oEmbed fetched:', data.title)
+
+        // Return both title and thumbnail
+        return {
+            title: data.title || null,
+            thumbnail: data.thumbnail_url || null
+        }
+    } catch (e) {
+        console.error('[Main] oEmbed fetch error:', e)
+        return null
+    }
 })
 
 ipcMain.handle('show-context-menu', async (event, linkUrl) => {

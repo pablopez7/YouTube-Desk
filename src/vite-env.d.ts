@@ -16,6 +16,7 @@ interface Window {
         onMaximized: (callback: (isMaximized: boolean) => void) => void;
         showContextMenu: (url: string) => Promise<void>;
         onOpenTab: (callback: (url: string) => void) => void;
+        getVideoTitle: (videoId: string) => Promise<{ title: string | null; thumbnail: string | null } | null>;
     }
 }
 

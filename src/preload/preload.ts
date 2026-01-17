@@ -30,5 +30,8 @@ contextBridge.exposeInMainWorld('electron', {
         const handler = (_: any, url: string) => callback(url)
         ipcRenderer.on('on-open-tab', handler)
         return () => ipcRenderer.removeAllListeners('on-open-tab')
-    }
+    },
+
+    // YouTube oEmbed API - fetch video title
+    getVideoTitle: (videoId: string) => ipcRenderer.invoke('get-video-title', videoId)
 })

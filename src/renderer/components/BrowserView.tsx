@@ -7,6 +7,24 @@ interface BrowserViewProps {
     isActive: boolean
 }
 
+// Extract video ID from YouTube URL
+const extractVideoId = (url: string): string | null => {
+    if (!url) return null
+
+    const patterns = [
+        /[?&]v=([^&]+)/,           // youtube.com/watch?v=ID
+        /youtu\.be\/([^?&]+)/,      // youtu.be/ID
+        /shorts\/([^?&]+)/,         // youtube.com/shorts/ID
+        /embed\/([^?&]+)/           // youtube.com/embed/ID
+    ]
+
+    for (const pattern of patterns) {
+        const match = url.match(pattern)
+        if (match) return match[1]
+    }
+    return null
+}
+
 export const BrowserView: React.FC<BrowserViewProps> = ({ tab, isActive }) => {
     const webviewRef = useRef<Electron.WebviewTag>(null)
     const updateTab = useAppStore(s => s.updateTab)
@@ -14,22 +32,9 @@ export const BrowserView: React.FC<BrowserViewProps> = ({ tab, isActive }) => {
     const navigationSignal = useAppStore(s => s.navigationSignal)
 
     // Track if tab has EVER been active (for lazy loading)
-    // Start with true for initial active tab, false for background tabs
     const [shouldRender, setShouldRender] = useState(false)
-    const initializedRef = useRef(false)
 
-    // Initialize: If this is the first active tab, render it. Otherwise wait.
-    useEffect(() => {
-        if (!initializedRef.current) {
-            initializedRef.current = true
-            // Only render immediately if this is the active tab on mount
-            if (isActive) {
-                setShouldRender(true)
-            }
-        }
-    }, [])
-
-    // When tab becomes active, trigger rendering
+    // When tab becomes active (including on first render), trigger rendering
     useEffect(() => {
         if (isActive && !shouldRender) {
             setShouldRender(true)
@@ -45,33 +50,87 @@ export const BrowserView: React.FC<BrowserViewProps> = ({ tab, isActive }) => {
             isLoading: webviewRef.current.isLoading()
         })
     }
+    const lastTitleRef = useRef<string>('')
+
+    // Main function to update title - uses IPC to main process for oEmbed
+    const updateTitleForUrl = async (url: string) => {
+        if (!url || !webviewRef.current) return
+
+        const videoId = extractVideoId(url)
+
+        // For video pages, use oEmbed API
+        if (videoId && window.electron?.getVideoTitle) {
+            try {
+                const result = await window.electron.getVideoTitle(videoId)
+                if (result && result.title && result.title !== lastTitleRef.current) {
+                    console.log('[BrowserView] Got title from oEmbed:', result.title)
+                    lastTitleRef.current = result.title
+                    updateTab(tab.id, {
+                        title: result.title,
+                        url,
+                        thumbnail: result.thumbnail || undefined
+                    })
+                    return
+                }
+            } catch (e) {
+                console.warn('[BrowserView] IPC getVideoTitle failed:', e)
+            }
+        }
+
+        // For non-video pages (or if oEmbed failed), use document.title
+        try {
+            const docTitle = await webviewRef.current.executeJavaScript('document.title')
+            if (docTitle && docTitle.trim() && docTitle !== 'about:blank' && docTitle !== lastTitleRef.current) {
+                console.log('[BrowserView] Using document.title:', docTitle)
+                lastTitleRef.current = docTitle
+                updateTab(tab.id, { title: docTitle, url })
+            }
+        } catch (e) {
+            // Ignore errors
+        }
+    }
 
     // Effect: Handle Navigation Signals (Only if active)
     useEffect(() => {
-        if (!isActive || !webviewRef.current) return
+        if (!isActive || !webviewRef.current || !navigationSignal.action) return
+
+        const webview = webviewRef.current
 
         switch (navigationSignal.action) {
             case 'back':
-                webviewRef.current.goBack()
+                if (webview.canGoBack()) {
+                    webview.goBack()
+                }
                 break
             case 'forward':
-                webviewRef.current.goForward()
+                if (webview.canGoForward()) {
+                    webview.goForward()
+                }
                 break
             case 'reload':
-                webviewRef.current.reload()
+                webview.reload()
                 break
-            case 'zoomIn':
-                webviewRef.current.setZoomFactor(webviewRef.current.getZoomFactor() + 0.1)
+            case 'zoomIn': {
+                const newZoom = webview.getZoomFactor() + 0.1
+                webview.setZoomFactor(newZoom)
+                updateTab(tab.id, { zoomLevel: newZoom })
                 break
-            case 'zoomOut':
-                webviewRef.current.setZoomFactor(webviewRef.current.getZoomFactor() - 0.1)
+            }
+            case 'zoomOut': {
+                const newZoom = Math.max(0.25, webview.getZoomFactor() - 0.1)
+                webview.setZoomFactor(newZoom)
+                updateTab(tab.id, { zoomLevel: newZoom })
                 break
+            }
         }
-    }, [navigationSignal])
+    }, [navigationSignal, isActive])
 
+    // Main effect: Set up all webview event listeners
     useEffect(() => {
         const webview = webviewRef.current
         if (!webview) return
+
+        console.log('[BrowserView] Setting up listeners for tab:', tab.id)
 
         const handleDidStartLoading = () => {
             updateTab(tab.id, { isLoading: true })
@@ -79,14 +138,12 @@ export const BrowserView: React.FC<BrowserViewProps> = ({ tab, isActive }) => {
         }
 
         const handleDidStopLoading = () => {
-            const title = webview.getTitle()
             const url = webview.getURL()
-            console.log('[BrowserView] did-stop-loading - Title:', title, 'URL:', url)
-            updateTab(tab.id, {
-                isLoading: false,
-                title: title,
-                url: url
-            })
+            console.log('[BrowserView] did-stop-loading - URL:', url)
+
+            updateTab(tab.id, { isLoading: false, url })
+            updateTitleForUrl(url)
+
             if (isActive) {
                 updateActiveTabState({
                     isLoading: false,
@@ -97,54 +154,51 @@ export const BrowserView: React.FC<BrowserViewProps> = ({ tab, isActive }) => {
         }
 
         const handleDomReady = () => {
-            // Get title when DOM is ready (for initial load)
-            const title = webview.getTitle()
-            console.log('[BrowserView] dom-ready - Title:', title)
-            if (title && title !== 'about:blank') {
-                updateTab(tab.id, { title })
+            console.log('[BrowserView] dom-ready')
+            const url = webview.getURL()
+            updateTitleForUrl(url)
+
+            // Restore saved zoom level
+            if (tab.zoomLevel && tab.zoomLevel !== 1.0) {
+                webview.setZoomFactor(tab.zoomLevel)
+                console.log('[BrowserView] Restored zoom level:', tab.zoomLevel)
             }
+
             if (isActive) syncState()
         }
 
-        // Update title dynamically when page title changes (e.g., video starts playing)
-        const handleTitleUpdated = (e: any) => {
-            // Electron webview page-title-updated event structure
-            // The title is on e.title for Electron webview events
-            const newTitle = e.title
-            console.log('[BrowserView] page-title-updated - newTitle:', newTitle)
-            if (newTitle && newTitle !== 'about:blank' && newTitle.length > 0) {
-                updateTab(tab.id, { title: newTitle })
-            }
-        }
-
-        // Note: context-menu is now handled in main process via webContents.on('context-menu')
-
         // Handle SPA navigation (YouTube uses this heavily)
         const handleDidNavigateInPage = () => {
-            // Delay slightly to ensure title is updated
-            setTimeout(() => {
-                const title = webview.getTitle()
-                console.log('[BrowserView] did-navigate-in-page - Title:', title)
-                if (title && title !== 'about:blank') {
-                    updateTab(tab.id, { title, url: webview.getURL() })
-                }
-            }, 500)  // Increased delay for YouTube SPA
+            const url = webview.getURL()
+            console.log('[BrowserView] did-navigate-in-page - URL:', url)
+            // Reset last title to force update
+            lastTitleRef.current = ''
+            updateTitleForUrl(url)
         }
 
+        // Register all event listeners
         webview.addEventListener('did-start-loading', handleDidStartLoading)
         webview.addEventListener('did-stop-loading', handleDidStopLoading)
         webview.addEventListener('dom-ready', handleDomReady)
-        webview.addEventListener('page-title-updated' as any, handleTitleUpdated)
         webview.addEventListener('did-navigate-in-page' as any, handleDidNavigateInPage)
 
+        // Polling fallback - check URL every 2 seconds
+        const pollInterval = setInterval(() => {
+            if (webviewRef.current) {
+                const currentUrl = webview.getURL()
+                updateTitleForUrl(currentUrl)
+            }
+        }, 2000)
+
+        // Cleanup
         return () => {
             if (webview) {
                 webview.removeEventListener('did-start-loading', handleDidStartLoading)
                 webview.removeEventListener('did-stop-loading', handleDidStopLoading)
                 webview.removeEventListener('dom-ready', handleDomReady)
-                webview.removeEventListener('page-title-updated' as any, handleTitleUpdated)
                 webview.removeEventListener('did-navigate-in-page' as any, handleDidNavigateInPage)
             }
+            clearInterval(pollInterval)
         }
     }, [tab.id, updateTab, isActive])
 
@@ -152,6 +206,13 @@ export const BrowserView: React.FC<BrowserViewProps> = ({ tab, isActive }) => {
     useEffect(() => {
         if (isActive && webviewRef.current) {
             setTimeout(syncState, 50)
+
+            // Refresh title when tab becomes active
+            const url = webviewRef.current.getURL()
+            if (url) {
+                lastTitleRef.current = '' // Force refresh
+                updateTitleForUrl(url)
+            }
         }
     }, [isActive])
 
