@@ -39,10 +39,28 @@ interface AppState {
     updateActiveTabState: (state: Partial<ActiveTabState>) => void
 }
 
+const DEFAULT_TAB: Tab = { id: '1', title: 'YouTube', url: 'https://www.youtube.com' }
+
+// Validate and fix corrupted data from localStorage
+const validateTabs = (tabs: any[]): Tab[] => {
+    if (!Array.isArray(tabs) || tabs.length === 0) {
+        return [{ ...DEFAULT_TAB, id: crypto.randomUUID() }]
+    }
+    return tabs.filter(t => t && typeof t.id === 'string' && typeof t.url === 'string' && t.url.length > 0)
+        .map(t => ({
+            id: t.id,
+            title: t.title || 'YouTube',
+            url: t.url || 'https://www.youtube.com',
+            isLoading: false,
+            thumbnail: t.thumbnail,
+            zoomLevel: t.zoomLevel
+        }))
+}
+
 export const useAppStore = create<AppState>()(
     persist(
         (set, get) => ({
-            tabs: [{ id: '1', title: 'YouTube', url: 'https://www.youtube.com' }],
+            tabs: [DEFAULT_TAB],
             activeTabId: '1',
 
             navigationSignal: { action: null, id: '' },
@@ -96,6 +114,18 @@ export const useAppStore = create<AppState>()(
         {
             name: 'yt-app-storage',
             partialize: (state) => ({ tabs: state.tabs, activeTabId: state.activeTabId }),
+            // Validate data when loading from localStorage
+            onRehydrateStorage: () => (state) => {
+                if (state) {
+                    const validTabs = validateTabs(state.tabs)
+                    state.tabs = validTabs
+                    // Ensure activeTabId is valid
+                    if (!validTabs.find(t => t.id === state.activeTabId)) {
+                        state.activeTabId = validTabs[0]?.id || null
+                    }
+                    console.log('[Store] Rehydrated with', validTabs.length, 'valid tabs')
+                }
+            }
         }
     )
 )
