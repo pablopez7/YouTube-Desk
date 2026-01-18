@@ -17,13 +17,13 @@ export default defineConfig({
         react(),
         electron({
             main: {
-                // Entry is relative to the project root (where vite.config.ts is)
-                entry: 'src/main/main.ts',
+                // Use absolute path to avoid issues with root directory
+                entry: path.join(__dirname, 'src/main/main.ts'),
             },
             preload: {
                 input: path.join(__dirname, 'src/preload/preload.ts'),
             },
-            renderer: {}, // Re-enable renderer integration if needed, or leave empty/remove
+            renderer: {},
         }),
     ],
     resolve: {

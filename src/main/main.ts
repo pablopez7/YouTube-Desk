@@ -50,6 +50,9 @@ const publicDir = path.join(__dirname, '../public')
 async function createWindow() {
     const windowState = store.get('windowState')
 
+    // Icon path - use resources folder
+    const iconPath = path.join(__dirname, '../resources/icon.ico')
+
     win = new BrowserWindow({
         width: windowState.width,
         height: windowState.height,
@@ -61,6 +64,7 @@ async function createWindow() {
         backgroundColor: '#0f0f0f', // YouTube dark background
         titleBarStyle: 'hidden',
         roundedCorners: true, // Rounded window corners
+        icon: iconPath, // YouTube icon for taskbar
         webPreferences: {
             preload,
             nodeIntegration: false,

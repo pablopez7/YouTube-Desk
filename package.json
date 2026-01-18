@@ -1,12 +1,12 @@
 {
   "name": "youtube-desktop",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A dedicated YouTube desktop application built with Electron, React, TypeScript, and Vite",
   "author": "Pablo Lopez",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR_USERNAME/youtube-desktop"
+    "url": "https://github.com/pablopez7/YouTube-Desk"
   },
   "keywords": [
     "youtube",
@@ -20,32 +20,33 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:renderer": "vite -c vite.config.renderer.ts",
     "start": "electron .",
     "build:electron": "npx esbuild src/main/main.ts --bundle --platform=node --format=esm --outfile=dist-electron/main.js --external:electron --external:electron-store && npx esbuild src/preload/preload.ts --bundle --platform=node --format=cjs --outfile=dist-electron/preload.js --external:electron",
-    "build": "npm run build:electron && vite build -c vite.config.renderer.ts && electron-builder",
+    "build": "npm run build:electron && vite build && electron-builder",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.1.0",
+    "@dnd-kit/sortable": "^8.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "clsx": "^2.1.0",
     "electron-store": "^8.2.0",
     "lucide-react": "^0.368.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwind-merge": "^2.2.2",
-    "@dnd-kit/core": "^6.1.0",
-    "@dnd-kit/sortable": "^8.0.0",
-    "@dnd-kit/utilities": "^3.2.2",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@electron/packager": "^19.0.1",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.19",
     "electron": "^30.0.0",
     "electron-builder": "^24.13.3",
+    "png-to-ico": "^3.0.1",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.2.2",
@@ -59,8 +60,14 @@
     "directories": {
       "output": "release"
     },
+    "extraResources": [
+      {
+        "from": "resources",
+        "to": "resources"
+      }
+    ],
     "win": {
-      "target": "nsis"
+      "target": "dir"
     },
     "mac": {
       "target": "dmg",
@@ -68,7 +75,8 @@
     },
     "files": [
       "dist-electron/**/*",
-      "dist/**/*"
+      "dist/**/*",
+      "resources/**/*"
     ]
   }
 }
