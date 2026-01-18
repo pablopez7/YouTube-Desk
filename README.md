@@ -4,122 +4,121 @@
   <img src="docs/screenshot.png" alt="YouTube Desktop Screenshot" width="800">
 </p>
 
-A dedicated YouTube desktop application built with **Electron**, **React**, **TypeScript**, and **Vite**. Enjoy a distraction-free YouTube experience with a native app feel, tab management, and session persistence.
+Aplicación de escritorio dedicada para YouTube construida con **Electron**, **React**, **TypeScript** y **Vite**. Disfruta de una experiencia de YouTube sin distracciones con un aspecto nativo, gestión de pestañas y persistencia de sesión.
 
-## ✨ Features
+## ✨ Características
 
-- 🎬 **Dedicated YouTube Experience** - Clean interface without browser distractions
-- 📑 **Tab Management** - Open multiple videos in tabs, drag-and-drop to reorder
-- 🖱️ **Ctrl+Click** - Open videos in new background tabs
-- 📋 **Context Menu** - Right-click to open links in new tabs or copy URLs
-- 💾 **Session Persistence** - Your tabs and window position are saved and restored
-- 🎨 **Dark Theme** - Native dark UI matching YouTube's aesthetic
-- ⌨️ **Keyboard Shortcuts** - `Ctrl+T` new tab, `Ctrl+W` close tab
-- 🚫 **Basic Ad Blocking** - Blocks common ad domains
+- 🎬 **Experiencia YouTube Dedicada** - Interfaz limpia sin distracciones del navegador
+- 📑 **Gestión de Pestañas** - Abre múltiples videos en pestañas, arrastra y suelta para reordenar
+- 🔄 **Actualización Automática de Títulos** - Los títulos de pestañas se actualizan automáticamente al navegar
+- 🖱️ **Ctrl+Clic** - Abre videos en nuevas pestañas en segundo plano
+- 📋 **Menú Contextual** - Clic derecho para abrir enlaces en nuevas pestañas o copiar URLs
+- 💾 **Persistencia de Sesión** - Tus pestañas y posición de ventana se guardan y restauran
+- 🎨 **Tema Oscuro** - Interfaz oscura nativa que combina con la estética de YouTube
+- ⌨️ **Atajos de Teclado** - `Ctrl+T` nueva pestaña, `Ctrl+W` cerrar pestaña
+- 🚫 **Bloqueo Básico de Anuncios** - Bloquea dominios comunes de publicidad
 
-## 📦 Installation
+## 📦 Instalación
 
-### Prerequisites
+### Requisitos Previos
 
-- [Node.js](https://nodejs.org/) 18 or higher
-- npm or yarn
+- [Node.js](https://nodejs.org/) 18 o superior
+- npm o yarn
 
-### Development Setup
+### Configuración de Desarrollo
 
 ```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/youtube-desktop.git
-cd youtube-desktop
+# Clonar el repositorio
+git clone https://github.com/pablopez7/YouTube-Desk.git
+cd YouTube-Desk
 
-# Install dependencies
+# Instalar dependencias
 npm install
 
-# Build the Electron files
-npm run build:electron
-
-# Start the development server
+# Iniciar el servidor de desarrollo
 npm run dev
 ```
 
-### Building for Production
+### Compilar para Producción
 
 ```bash
-# Build for your platform
+# Compilar para tu plataforma
 npm run build
 
-# The installer will be in the 'release' folder
+# El instalador estará en la carpeta 'release'
 ```
 
-## 🛠️ Tech Stack
+## 🛠️ Stack Tecnológico
 
-- **[Electron](https://www.electronjs.org/)** - Cross-platform desktop apps
-- **[React 18](https://react.dev/)** - UI framework
-- **[TypeScript](https://www.typescriptlang.org/)** - Type safety
-- **[Vite](https://vitejs.dev/)** - Fast build tooling
-- **[Tailwind CSS](https://tailwindcss.com/)** - Styling
-- **[Zustand](https://zustand-demo.pmnd.rs/)** - State management
-- **[@dnd-kit](https://dndkit.com/)** - Drag and drop for tabs
+- **[Electron](https://www.electronjs.org/)** - Apps de escritorio multiplataforma
+- **[React 18](https://react.dev/)** - Framework de UI
+- **[TypeScript](https://www.typescriptlang.org/)** - Seguridad de tipos
+- **[Vite](https://vitejs.dev/)** - Herramienta de build rápida
+- **[Tailwind CSS](https://tailwindcss.com/)** - Estilos
+- **[Zustand](https://zustand-demo.pmnd.rs/)** - Gestión de estado
+- **[@dnd-kit](https://dndkit.com/)** - Drag and drop para pestañas
 
-## 📁 Project Structure
+## 📁 Estructura del Proyecto
 
 ```
-youtube-desktop/
+YouTube-Desk/
 ├── src/
-│   ├── main/           # Electron main process
-│   │   └── main.ts     # App entry, window management, IPC
-│   ├── preload/        # Preload scripts for IPC bridge
+│   ├── main/           # Proceso principal de Electron
+│   │   └── main.ts     # Entrada, gestión de ventana, IPC
+│   ├── preload/        # Scripts de preload para puente IPC
 │   │   └── preload.ts
-│   └── renderer/       # React frontend
-│       ├── components/ # React components
-│       │   ├── BrowserView.tsx  # WebView wrapper
-│       │   ├── TabSystem.tsx    # Tab bar with drag-drop
-│       │   └── TitleBar.tsx     # Custom window titlebar
-│       ├── App.tsx     # Main app component
-│       ├── store.ts    # Zustand state management
-│       └── main.tsx    # React entry point
-├── dist-electron/      # Compiled Electron files
-├── dist/               # Compiled renderer
-└── release/            # Built installers
+│   └── renderer/       # Frontend React
+│       ├── components/ # Componentes React
+│       │   ├── BrowserView.tsx  # Wrapper de WebView
+│       │   ├── TabSystem.tsx    # Barra de pestañas con drag-drop
+│       │   └── TitleBar.tsx     # Barra de título personalizada
+│       ├── App.tsx     # Componente principal
+│       ├── store.ts    # Gestión de estado con Zustand
+│       ├── utils.ts    # Utilidades compartidas
+│       └── main.tsx    # Punto de entrada de React
+├── dist-electron/      # Archivos Electron compilados
+├── dist/               # Renderer compilado
+└── release/            # Instaladores compilados
 ```
 
-## ⌨️ Keyboard Shortcuts
+## ⌨️ Atajos de Teclado
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl + T` | Open new tab |
-| `Ctrl + W` | Close current tab |
-| `Ctrl + Click` | Open link in background tab |
+| Atajo | Acción |
+|-------|--------|
+| `Ctrl + T` | Abrir nueva pestaña |
+| `Ctrl + W` | Cerrar pestaña actual |
+| `Ctrl + Clic` | Abrir enlace en pestaña de fondo |
 
 ## 🔧 Scripts
 
-| Script | Description |
+| Script | Descripción |
 |--------|-------------|
-| `npm run dev` | Start development server with hot reload |
-| `npm run start` | Run Electron in development |
-| `npm run build` | Build production app and installer |
-| `npm run build:electron` | Build only Electron files |
-| `npm run typecheck` | Run TypeScript type checking |
+| `npm run dev` | Iniciar servidor de desarrollo con hot reload |
+| `npm run start` | Ejecutar Electron en desarrollo |
+| `npm run build` | Compilar app de producción e instalador |
+| `npm run build:electron` | Compilar solo archivos de Electron |
+| `npm run typecheck` | Ejecutar verificación de tipos TypeScript |
 
-## 🤝 Contributing
+## 🤝 Contribuir
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+¡Las contribuciones son bienvenidas! Por favor siéntete libre de enviar un Pull Request.
 
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+1. Haz fork del proyecto
+2. Crea tu rama de feature (`git checkout -b feature/NuevaCaracteristica`)
+3. Haz commit de tus cambios (`git commit -m 'Agregar NuevaCaracteristica'`)
+4. Push a la rama (`git push origin feature/NuevaCaracteristica`)
+5. Abre un Pull Request
 
-## 📄 License
+## 📄 Licencia
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
 
-## ⚠️ Disclaimer
+## ⚠️ Aviso Legal
 
-This application is not affiliated with, endorsed by, or sponsored by YouTube or Google. YouTube is a trademark of Google LLC. This is an independent open-source project.
+Esta aplicación no está afiliada, respaldada ni patrocinada por YouTube o Google. YouTube es una marca registrada de Google LLC. Este es un proyecto de código abierto independiente.
 
-## 🙏 Acknowledgments
+## 🙏 Agradecimientos
 
-- [Electron](https://www.electronjs.org/) for making cross-platform desktop apps possible
-- [Vite Plugin Electron](https://github.com/electron-vite/vite-plugin-electron) for the excellent build tooling
-- The React and TypeScript communities
+- [Electron](https://www.electronjs.org/) por hacer posibles las apps de escritorio multiplataforma
+- [Vite Plugin Electron](https://github.com/electron-vite/vite-plugin-electron) por las excelentes herramientas de build
+- Las comunidades de React y TypeScript

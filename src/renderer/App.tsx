@@ -2,24 +2,7 @@ import { useRef, useEffect } from 'react'
 import { TitleBar } from './components/TitleBar'
 import { BrowserView } from './components/BrowserView'
 import { useAppStore } from './store'
-
-// Extract video ID from YouTube URL
-const extractVideoId = (url: string): string | null => {
-    if (!url) return null
-
-    const patterns = [
-        /[?&]v=([^&]+)/,           // youtube.com/watch?v=ID
-        /youtu\.be\/([^?&]+)/,      // youtu.be/ID
-        /shorts\/([^?&]+)/,         // youtube.com/shorts/ID
-        /embed\/([^?&]+)/           // youtube.com/embed/ID
-    ]
-
-    for (const pattern of patterns) {
-        const match = url.match(pattern)
-        if (match) return match[1]
-    }
-    return null
-}
+import { extractVideoId } from './utils'
 
 function App() {
     const { tabs, activeTabId, addTab, closeTab } = useAppStore()

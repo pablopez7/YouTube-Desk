@@ -1,28 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Tab, useAppStore } from '../store'
 import { clsx } from 'clsx'
+import { extractVideoId } from '../utils'
 
 interface BrowserViewProps {
     tab: Tab
     isActive: boolean
-}
-
-// Extract video ID from YouTube URL
-const extractVideoId = (url: string): string | null => {
-    if (!url) return null
-
-    const patterns = [
-        /[?&]v=([^&]+)/,           // youtube.com/watch?v=ID
-        /youtu\.be\/([^?&]+)/,      // youtu.be/ID
-        /shorts\/([^?&]+)/,         // youtube.com/shorts/ID
-        /embed\/([^?&]+)/           // youtube.com/embed/ID
-    ]
-
-    for (const pattern of patterns) {
-        const match = url.match(pattern)
-        if (match) return match[1]
-    }
-    return null
 }
 
 export const BrowserView: React.FC<BrowserViewProps> = ({ tab, isActive }) => {
