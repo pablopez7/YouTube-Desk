@@ -32,7 +32,7 @@ const YouTubeLogo = () => (
 )
 
 // Tab Icon Component - shows thumbnail or YouTube logo
-const TabIcon = ({ thumbnail, isActive }: { thumbnail?: string; isActive: boolean }) => {
+const TabIcon = ({ thumbnail, isActive, isLight }: { thumbnail?: string; isActive: boolean; isLight: boolean }) => {
     if (thumbnail) {
         return (
             <img
@@ -40,7 +40,6 @@ const TabIcon = ({ thumbnail, isActive }: { thumbnail?: string; isActive: boolea
                 alt=""
                 className="w-5 h-5 rounded-sm object-cover flex-shrink-0"
                 onError={(e) => {
-                    // If image fails to load, hide it
                     (e.target as HTMLImageElement).style.display = 'none'
                 }}
             />
@@ -50,7 +49,7 @@ const TabIcon = ({ thumbnail, isActive }: { thumbnail?: string; isActive: boolea
     return (
         <span className={clsx(
             "transition-colors",
-            isActive ? "text-red-500" : "text-gray-500"
+            isActive ? "text-red-500" : (isLight ? "text-gray-500" : "text-gray-500")
         )}>
             <YouTubeLogo />
         </span>
@@ -58,7 +57,13 @@ const TabIcon = ({ thumbnail, isActive }: { thumbnail?: string; isActive: boolea
 }
 
 // --- Single Tab Component ---
-function SortableTab({ tab, isActive, onActivate, onClose }: { tab: any, isActive: boolean, onActivate: () => void, onClose: (e: React.MouseEvent) => void }) {
+function SortableTab({ tab, isActive, isLight, onActivate, onClose }: {
+    tab: any,
+    isActive: boolean,
+    isLight: boolean,
+    onActivate: () => void,
+    onClose: (e: React.MouseEvent) => void
+}) {
     const {
         attributes,
         listeners,
@@ -82,12 +87,16 @@ function SortableTab({ tab, isActive, onActivate, onClose }: { tab: any, isActiv
             className={clsx(
                 "group relative flex items-center gap-1.5 h-[30px] min-w-[100px] max-w-[200px] px-2.5 rounded-t-lg transition-all cursor-default text-[12px] no-drag select-none border-b-2",
                 isActive
-                    ? "bg-youtube-surface text-white z-10 border-red-500 shadow-lg shadow-red-500/20"
-                    : "bg-transparent text-gray-400 hover:bg-white/5 hover:text-gray-200 border-transparent"
+                    ? isLight
+                        ? "bg-youtube-light-surface text-black z-10 border-red-500 shadow-lg shadow-red-500/20"
+                        : "bg-youtube-surface text-white z-10 border-red-500 shadow-lg shadow-red-500/20"
+                    : isLight
+                        ? "bg-transparent text-gray-600 hover:bg-black/5 hover:text-gray-800 border-transparent"
+                        : "bg-transparent text-gray-400 hover:bg-white/5 hover:text-gray-200 border-transparent"
             )}
         >
             {/* Tab Icon (thumbnail or YouTube logo) */}
-            <TabIcon thumbnail={tab.thumbnail} isActive={isActive} />
+            <TabIcon thumbnail={tab.thumbnail} isActive={isActive} isLight={isLight} />
 
             {/* Tab Title */}
             <div className="flex-1 truncate font-medium pr-4 pointer-events-none">
@@ -97,8 +106,9 @@ function SortableTab({ tab, isActive, onActivate, onClose }: { tab: any, isActiv
             {/* Close Button */}
             <button
                 className={clsx(
-                    "absolute right-1.5 p-0.5 rounded-full opacity-0 group-hover:opacity-100 hover:bg-white/20 transition-all",
-                    isActive && "opacity-100"
+                    "absolute right-1.5 p-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-all",
+                    isActive && "opacity-100",
+                    isLight ? "hover:bg-black/20" : "hover:bg-white/20"
                 )}
                 onClick={onClose}
             >
@@ -110,7 +120,8 @@ function SortableTab({ tab, isActive, onActivate, onClose }: { tab: any, isActiv
 
 // --- Tab System Component ---
 export const TabSystem: React.FC = () => {
-    const { tabs, activeTabId, reorderTabs, setActiveTab, closeTab, addTab } = useAppStore()
+    const { tabs, activeTabId, reorderTabs, setActiveTab, closeTab, addTab, theme } = useAppStore()
+    const isLight = theme === 'light'
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -149,6 +160,7 @@ export const TabSystem: React.FC = () => {
                             key={tab.id}
                             tab={tab}
                             isActive={activeTabId === tab.id}
+                            isLight={isLight}
                             onActivate={() => setActiveTab(tab.id)}
                             onClose={(e) => {
                                 e.stopPropagation();
@@ -161,7 +173,12 @@ export const TabSystem: React.FC = () => {
 
             <button
                 onClick={() => addTab()}
-                className="flex items-center justify-center w-7 h-7 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors no-drag ml-1"
+                className={clsx(
+                    "flex items-center justify-center w-7 h-7 rounded-full transition-colors no-drag ml-1",
+                    isLight
+                        ? "text-gray-600 hover:text-black hover:bg-black/10"
+                        : "text-gray-400 hover:text-white hover:bg-white/10"
+                )}
                 title="New Tab"
             >
                 <Plus size={16} />
