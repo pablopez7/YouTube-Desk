@@ -24,7 +24,10 @@
     "build:electron": "npx esbuild src/main/main.ts --bundle --platform=node --format=esm --outfile=dist-electron/main.js --external:electron --external:electron-store && npx esbuild src/preload/preload.ts --bundle --platform=node --format=cjs --outfile=dist-electron/preload.js --external:electron",
     "build": "npm run build:electron && vite build && electron-builder",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.1.0",
@@ -40,19 +43,24 @@
   },
   "devDependencies": {
     "@electron/packager": "^19.0.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.19",
     "electron": "^30.0.0",
     "electron-builder": "^24.13.3",
+    "jsdom": "^27.4.0",
     "png-to-ico": "^3.0.1",
     "postcss": "^8.4.38",
+    "sharp": "^0.34.5",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.2.2",
     "vite": "^5.2.0",
     "vite-plugin-electron": "^0.28.4",
-    "vite-plugin-electron-renderer": "^0.14.5"
+    "vite-plugin-electron-renderer": "^0.14.5",
+    "vitest": "^4.0.17"
   },
   "build": {
     "appId": "com.youtube.desktop",
@@ -67,7 +75,11 @@
       }
     ],
     "win": {
-      "target": "dir"
+      "target": "portable",
+      "icon": "resources/icon.ico"
+    },
+    "portable": {
+      "artifactName": "${productName}.${ext}"
     },
     "mac": {
       "target": "dmg",
