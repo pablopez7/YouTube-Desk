@@ -1,66 +1,70 @@
-# Contributing to YouTube Desktop
+# Contribuir a YouTube Desktop
 
-First off, thank you for considering contributing to YouTube Desktop! 🎉
+¡Primero, gracias por considerar contribuir a YouTube Desktop! 🎉
 
-## How Can I Contribute?
+## ¿Cómo Puedo Contribuir?
 
-### Reporting Bugs
+### Reportar Errores
 
-Before creating bug reports, please check the existing issues to avoid duplicates.
+Antes de crear un reporte de error, revisa los issues existentes para evitar duplicados.
 
-When creating a bug report, include:
-- **Clear title** describing the issue
-- **Steps to reproduce** the behavior
-- **Expected behavior** vs what actually happened
-- **Screenshots** if applicable
-- **Your environment** (OS, Node version, etc.)
+Al crear un reporte, incluye:
+- **Título claro** describiendo el problema
+- **Pasos para reproducir** el comportamiento
+- **Comportamiento esperado** vs lo que realmente pasó
+- **Capturas de pantalla** si aplica
+- **Tu entorno** (SO, versión de Node, etc.)
 
-### Suggesting Features
+### Sugerir Funcionalidades
 
-Feature requests are welcome! Please:
-- Check if the feature has already been suggested
-- Provide a clear description of the feature
-- Explain why this feature would be useful
+¡Las sugerencias son bienvenidas! Por favor:
+- Verifica si la funcionalidad ya fue sugerida
+- Proporciona una descripción clara de la característica
+- Explica por qué esta funcionalidad sería útil
 
 ### Pull Requests
 
-1. **Fork** the repo and create your branch from `main`
-2. **Install** dependencies: `npm install`
-3. **Make your changes** and test them
-4. **Commit** with clear, descriptive messages
-5. **Push** to your fork and submit a PR
+1. **Haz fork** del repositorio y crea tu rama desde `main`
+2. **Instala** dependencias: `npm install`
+3. **Realiza tus cambios** y pruébalos
+4. **Haz commit** con mensajes claros y descriptivos
+5. **Push** a tu fork y envía un PR
 
-## Development Setup
+## Configuración de Desarrollo
 
 ```bash
-# Install dependencies
+# Instalar dependencias
 npm install
 
-# Build Electron files
-npm run build:electron
-
-# Start development
+# Iniciar desarrollo (Vite + Electron con hot-reload)
 npm run dev
 
-# In another terminal, start Electron
-npm run start
+# Verificar tipos
+npm run typecheck
+
+# Compilar para producción
+npm run build
 ```
 
-## Code Style
+## Estilo de Código
 
-- Use TypeScript for all new code
-- Follow the existing code style
-- Use meaningful variable and function names
-- Add comments for complex logic
+- Usa TypeScript para todo código nuevo
+- Sigue el estilo de código existente
+- Usa nombres descriptivos para variables y funciones
+- Agrega comentarios para lógica compleja
+- Commits en español con mensajes descriptivos
 
-## Project Structure
+## Estructura del Proyecto
 
-- `src/main/` - Electron main process
-- `src/preload/` - Preload scripts for secure IPC
-- `src/renderer/` - React frontend
+| Carpeta | Contenido |
+|---------|-----------|
+| `src/main/` | Proceso principal de Electron |
+| `src/preload/` | Scripts de preload para IPC seguro |
+| `src/renderer/` | Frontend React |
+| `docs/` | Documentación |
 
-## Questions?
+## ¿Preguntas?
 
-Feel free to open an issue with the "question" label.
+Siéntete libre de abrir un issue con la etiqueta "pregunta".
 
-Thank you for contributing! 💪
+¡Gracias por contribuir! 💪
