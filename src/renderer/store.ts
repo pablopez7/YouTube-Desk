@@ -1,5 +1,8 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { createLogger } from '../shared/logger'
+
+const log = createLogger('Store')
 
 export interface Tab {
     id: string
@@ -17,6 +20,8 @@ interface ActiveTabState {
     isLoading: boolean
 }
 
+export type Theme = 'dark' | 'light'
+
 type NavigationAction = 'back' | 'forward' | 'reload' | 'zoomIn' | 'zoomOut' | null
 
 interface AppState {
@@ -26,6 +31,9 @@ interface AppState {
     // Navigation Bridge
     navigationSignal: { action: NavigationAction, id: string } // id is random to trigger effect
     activeTabState: ActiveTabState
+
+    // Theme detected from YouTube
+    theme: Theme
 
     addTab: (url?: string, active?: boolean, title?: string, thumbnail?: string) => void
     closeTab: (id: string) => void
@@ -37,6 +45,8 @@ interface AppState {
     triggerNavigation: (action: NavigationAction) => void
     // Actions called by BrowserView
     updateActiveTabState: (state: Partial<ActiveTabState>) => void
+    // Set theme detected from YouTube
+    setTheme: (theme: Theme) => void
 }
 
 const DEFAULT_TAB: Tab = { id: '1', title: 'YouTube', url: 'https://www.youtube.com' }
@@ -65,6 +75,7 @@ export const useAppStore = create<AppState>()(
 
             navigationSignal: { action: null, id: '' },
             activeTabState: { canGoBack: false, canGoForward: false, isLoading: false },
+            theme: 'dark', // Default to dark, will be detected from YouTube
 
             addTab: (url = 'https://www.youtube.com', active = true, title = 'YouTube', thumbnail?: string) => {
                 const newTab: Tab = {
@@ -109,7 +120,12 @@ export const useAppStore = create<AppState>()(
 
             triggerNavigation: (action) => set({ navigationSignal: { action, id: crypto.randomUUID() } }),
 
-            updateActiveTabState: (data) => set((state) => ({ activeTabState: { ...state.activeTabState, ...data } }))
+            updateActiveTabState: (data) => set((state) => ({ activeTabState: { ...state.activeTabState, ...data } })),
+
+            setTheme: (theme) => {
+                log.info('Theme changed', { theme })
+                set({ theme })
+            }
         }),
         {
             name: 'yt-app-storage',
@@ -123,7 +139,7 @@ export const useAppStore = create<AppState>()(
                     if (!validTabs.find(t => t.id === state.activeTabId)) {
                         state.activeTabId = validTabs[0]?.id || null
                     }
-                    console.log('[Store] Rehydrated with', validTabs.length, 'valid tabs')
+                    log.info('Rehydrated', { validTabs: validTabs.length })
                 }
             }
         }

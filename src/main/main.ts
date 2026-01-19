@@ -3,17 +3,14 @@ import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { release } from 'node:os'
 import Store from 'electron-store'
+import { createLogger } from '../shared/logger'
+import type { WindowState, MenuItemTemplate, VideoInfo } from '../shared/types'
+
+const log = createLogger('Main')
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-// Type for window state
-interface WindowState {
-    width: number;
-    height: number;
-    x?: number;
-    y?: number;
-    isMaximized: boolean;
-}
+// WindowState type is now imported from shared/types
 
 const store = new Store<{ windowState: WindowState }>({
     defaults: {
@@ -137,7 +134,7 @@ app.whenReady().then(() => {
         if (contents.getType() === 'webview') {
             // Avoid adding duplicate handlers
             if (handledContents.has(contents)) {
-                console.log('[Main] Skipping duplicate handler for webview')
+                log.debug('Skipping duplicate handler for webview')
                 return
             }
             handledContents.add(contents)
@@ -145,11 +142,11 @@ app.whenReady().then(() => {
             // Handle Ctrl+Click and window.open
             contents.setWindowOpenHandler((details) => {
                 const now = Date.now()
-                console.log('[Main] webview window open request:', details.url)
+                log.info('Webview window open request', { url: details.url })
 
                 // Debounce: ignore if same URL was opened recently
                 if (details.url === lastOpenedUrl && (now - lastOpenedTime) < DEBOUNCE_MS) {
-                    console.log('[Main] Debouncing duplicate request')
+                    log.debug('Debouncing duplicate request')
                     return { action: 'deny' }
                 }
 
@@ -166,9 +163,9 @@ app.whenReady().then(() => {
 
             // Handle context-menu for webviews (right-click)
             contents.on('context-menu', (event, params) => {
-                console.log('[Main] webview context-menu:', params.linkURL || 'no link')
+                log.debug('Webview context-menu', { linkURL: params.linkURL || 'no link' })
 
-                const template: any[] = []
+                const template: MenuItemTemplate[] = []
 
                 // Link-specific options - check if right-clicked on a link
                 if (params.linkURL) {
@@ -269,12 +266,12 @@ ipcMain.handle('get-video-title', async (_, videoId: string) => {
         const response = await fetch(oembedUrl)
 
         if (!response.ok) {
-            console.log('[Main] oEmbed request failed:', response.status)
+            log.warn('oEmbed request failed', { status: response.status })
             return null
         }
 
         const data = await response.json()
-        console.log('[Main] oEmbed fetched:', data.title)
+        log.info('oEmbed fetched', { title: data.title })
 
         // Return both title and thumbnail
         return {
@@ -282,13 +279,13 @@ ipcMain.handle('get-video-title', async (_, videoId: string) => {
             thumbnail: data.thumbnail_url || null
         }
     } catch (e) {
-        console.error('[Main] oEmbed fetch error:', e)
+        log.error('oEmbed fetch error', { error: e instanceof Error ? e.message : e })
         return null
     }
 })
 
 ipcMain.handle('show-context-menu', async (event, linkUrl) => {
-    const template: any[] = []
+    const template: MenuItemTemplate[] = []
 
     // Link-specific options
     if (linkUrl) {
