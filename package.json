@@ -1,6 +1,6 @@
 {
   "name": "youtube-desktop",
-  "version": "1.1.0",
+  "version": "1.3.3",
   "description": "A dedicated YouTube desktop application built with Electron, React, TypeScript, and Vite",
   "author": "Pablo Lopez",
   "license": "MIT",
@@ -21,8 +21,10 @@
   "scripts": {
     "dev": "vite",
     "start": "electron .",
-    "build:electron": "npx esbuild src/main/main.ts --bundle --platform=node --format=esm --outfile=dist-electron/main.js --external:electron --external:electron-store && npx esbuild src/preload/preload.ts --bundle --platform=node --format=cjs --outfile=dist-electron/preload.js --external:electron",
+    "build:electron": "npx esbuild src/main/main.ts --bundle --platform=node --format=esm --outfile=dist-electron/main.js --external:electron --external:electron-store --external:electron-updater && npx esbuild src/preload/preload.ts --bundle --platform=node --format=cjs --outfile=dist-electron/preload.js --external:electron",
     "build": "npm run build:electron && vite build && electron-builder",
+    "build:portable": "npm run build:electron && vite build && electron-builder --win portable",
+    "build:nsis": "npm run build:electron && vite build && electron-builder --win nsis",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
@@ -30,18 +32,14 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@dnd-kit/core": "^6.1.0",
-    "@dnd-kit/sortable": "^8.0.0",
-    "@dnd-kit/utilities": "^3.2.2",
-    "clsx": "^2.1.0",
     "electron-store": "^8.2.0",
-    "lucide-react": "^0.368.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "tailwind-merge": "^2.2.2",
+    "electron-updater": "^6.7.3",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@dnd-kit/core": "^6.1.0",
+    "@dnd-kit/sortable": "^8.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@electron/packager": "^19.0.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -49,13 +47,19 @@
     "@types/react-dom": "^18.2.22",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.19",
+    "clsx": "^2.1.0",
     "electron": "^30.0.0",
     "electron-builder": "^24.13.3",
+    "esbuild": "^0.20.0",
     "jsdom": "^27.4.0",
+    "lucide-react": "^0.368.0",
     "png-to-ico": "^3.0.1",
     "postcss": "^8.4.38",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "resedit": "^3.0.1",
     "sharp": "^0.34.5",
+    "tailwind-merge": "^2.2.2",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.2.2",
     "vite": "^5.2.0",
@@ -67,7 +71,8 @@
     "appId": "com.youtube.desktop",
     "productName": "YouTube Desktop",
     "directories": {
-      "output": "release"
+      "output": "release",
+      "buildResources": "build"
     },
     "extraResources": [
       {
@@ -76,11 +81,30 @@
       }
     ],
     "win": {
-      "target": "portable",
-      "icon": "resources/icon.ico"
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false,
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "YouTubeDesktop-${version}-Setup.${ext}",
+      "shortcutName": "YouTube Desktop",
+      "uninstallerIcon": "build/icon.ico",
+      "installerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "menuCategory": true,
+      "include": "build/installer.nsh",
+      "deleteAppDataOnUninstall": false
     },
     "portable": {
-      "artifactName": "${productName}.${ext}"
+      "artifactName": "YouTubeDesktop-${version}-Portable.${ext}"
     },
     "mac": {
       "target": "dmg",
@@ -90,6 +114,11 @@
       "dist-electron/**/*",
       "dist/**/*",
       "resources/**/*"
-    ]
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "pablopez7",
+      "repo": "YouTube-Desk"
+    }
   }
 }

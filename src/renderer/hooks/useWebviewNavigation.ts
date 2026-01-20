@@ -24,7 +24,6 @@ export function useWebviewNavigation({
     isReady
 }: UseWebviewNavigationProps) {
     const navigationSignal = useAppStore(s => s.navigationSignal)
-    const updateTab = useAppStore(s => s.updateTab)
     const updateActiveTabState = useAppStore(s => s.updateActiveTabState)
 
     // Sync active tab state when becoming active or ready
@@ -68,24 +67,24 @@ export function useWebviewNavigation({
                 webview.reload()
                 break
             case 'zoomIn': {
-                const currentZoom = webview.getZoomFactor()
-                const newZoom = currentZoom + 0.1
+                const currentZoom = useAppStore.getState().globalZoomLevel
+                const newZoom = Math.min(3.0, currentZoom + 0.05)
                 log.debug('Zooming in', { currentZoom, newZoom })
                 webview.setZoomFactor(newZoom)
-                updateTab(tabId, { zoomLevel: newZoom })
+                useAppStore.getState().setGlobalZoomLevel(newZoom)
                 break
             }
             case 'zoomOut': {
-                const currentZoom = webview.getZoomFactor()
-                const newZoom = Math.max(0.25, currentZoom - 0.1)
+                const currentZoom = useAppStore.getState().globalZoomLevel
+                const newZoom = Math.max(0.25, currentZoom - 0.05)
                 log.debug('Zooming out', { currentZoom, newZoom })
                 webview.setZoomFactor(newZoom)
-                updateTab(tabId, { zoomLevel: newZoom })
+                useAppStore.getState().setGlobalZoomLevel(newZoom)
                 break
             }
         }
         // Use navigationSignal.id to detect changes - it's a UUID that changes on each action
-    }, [navigationSignal.id, navigationSignal.action, isActive, isReady, tabId, webviewRef, updateTab])
+    }, [navigationSignal.id, navigationSignal.action, isActive, isReady, webviewRef])
 
     return { syncNavigationState }
 }

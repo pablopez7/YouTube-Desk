@@ -4,6 +4,7 @@ import path from 'node:path'
 import { release } from 'node:os'
 import Store from 'electron-store'
 import { createLogger } from '../shared/logger'
+import { initAutoUpdater } from './updater'
 import type { WindowState, MenuItemTemplate, VideoInfo } from '../shared/types'
 
 const log = createLogger('Main')
@@ -25,8 +26,9 @@ const store = new Store<{ windowState: WindowState }>({
 // Disable GPU Acceleration for Windows 7 - REMOVED for performance on modern systems
 // if (release().startsWith('6.1')) app.disableHardwareAcceleration()
 
-// Set application name for Windows 10+ notifications
-if (process.platform === 'win32') app.setAppUserModelId(app.getName())
+// Set application name for Windows 10+ notifications and taskbar grouping
+// This MUST match the appId in package.json build config
+if (process.platform === 'win32') app.setAppUserModelId('com.youtube.desktop')
 
 if (!app.requestSingleInstanceLock()) {
     app.quit()
@@ -104,6 +106,9 @@ async function createWindow() {
 
 app.whenReady().then(() => {
     createWindow()
+
+    // Initialize auto-updater after window is ready
+    initAutoUpdater(win)
 
     // Configure session for YouTube & AdBlock (Basic)
     const filter = {

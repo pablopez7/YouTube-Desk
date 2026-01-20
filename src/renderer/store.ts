@@ -35,6 +35,9 @@ interface AppState {
     // Theme detected from YouTube
     theme: Theme
 
+    // Global zoom level (persisted)
+    globalZoomLevel: number
+
     addTab: (url?: string, active?: boolean, title?: string, thumbnail?: string) => void
     closeTab: (id: string) => void
     setActiveTab: (id: string) => void
@@ -47,6 +50,8 @@ interface AppState {
     updateActiveTabState: (state: Partial<ActiveTabState>) => void
     // Set theme detected from YouTube
     setTheme: (theme: Theme) => void
+    // Set global zoom level
+    setGlobalZoomLevel: (zoomLevel: number) => void
 }
 
 const DEFAULT_TAB: Tab = { id: '1', title: 'YouTube', url: 'https://www.youtube.com' }
@@ -75,6 +80,7 @@ export const useAppStore = create<AppState>()(
 
             navigationSignal: { action: null, id: '' },
             activeTabState: { canGoBack: false, canGoForward: false, isLoading: false },
+            globalZoomLevel: 1.0, // Default 100%
             theme: 'dark', // Default to dark, will be detected from YouTube
 
             addTab: (url = 'https://www.youtube.com', active = true, title = 'YouTube', thumbnail?: string) => {
@@ -125,11 +131,16 @@ export const useAppStore = create<AppState>()(
             setTheme: (theme) => {
                 log.info('Theme changed', { theme })
                 set({ theme })
+            },
+
+            setGlobalZoomLevel: (zoomLevel) => {
+                log.info('Global zoom changed', { zoomLevel })
+                set({ globalZoomLevel: zoomLevel })
             }
         }),
         {
             name: 'yt-app-storage',
-            partialize: (state) => ({ tabs: state.tabs, activeTabId: state.activeTabId }),
+            partialize: (state) => ({ tabs: state.tabs, activeTabId: state.activeTabId, globalZoomLevel: state.globalZoomLevel }),
             // Validate data when loading from localStorage
             onRehydrateStorage: () => (state) => {
                 if (state) {

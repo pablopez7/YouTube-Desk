@@ -5,7 +5,7 @@ import { TabSystem } from './TabSystem'
 import { useAppStore } from '../store'
 
 export const TitleBar: React.FC = () => {
-    const { triggerNavigation, activeTabState, theme } = useAppStore()
+    const { triggerNavigation, activeTabState, theme, globalZoomLevel } = useAppStore()
     const isLight = theme === 'light'
 
     const handleMinimize = () => window.electron.minimize()
@@ -21,6 +21,9 @@ export const TitleBar: React.FC = () => {
     )
 
     const btnDisabled = "disabled:opacity-30"
+
+    // Format zoom percentage
+    const zoomPercent = Math.round(globalZoomLevel * 100)
 
     return (
         <div className={clsx(
@@ -68,6 +71,12 @@ export const TitleBar: React.FC = () => {
                     <button onClick={() => triggerNavigation('zoomOut')} className={btnBase}>
                         <ZoomOut size={12} />
                     </button>
+                    <span className={clsx(
+                        "text-xs font-medium min-w-[36px] text-center tabular-nums",
+                        isLight ? "text-gray-600" : "text-gray-400"
+                    )}>
+                        {zoomPercent}%
+                    </span>
                     <button onClick={() => triggerNavigation('zoomIn')} className={btnBase}>
                         <ZoomIn size={12} />
                     </button>

@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run build:electron:*)"
+      "Bash(npm run build:electron:*)",
+      "Bash(npm run build:portable:*)",
+      "Bash(node -e:*)",
+      "Bash(ls:*)",
+      "Bash(explorer.exe \"c:\\\\Users\\\\pablopez\\\\Proyectos\\\\AppYT\\\\release\")"
     ]
   }
 }

@@ -59,9 +59,10 @@ export const BrowserView: React.FC<BrowserViewProps> = ({ tab, isActive }) => {
             const url = webview.getURL()
             updateTitle(url)
 
-            // Restore zoom level
-            if (tab.zoomLevel && tab.zoomLevel !== 1.0) {
-                webview.setZoomFactor(tab.zoomLevel)
+            // Apply global zoom level on initial load
+            const currentZoom = useAppStore.getState().globalZoomLevel
+            if (currentZoom !== 1.0) {
+                webview.setZoomFactor(currentZoom)
             }
 
             // Detect YouTube theme (only if active tab to avoid conflicts)
@@ -156,10 +157,16 @@ export const BrowserView: React.FC<BrowserViewProps> = ({ tab, isActive }) => {
         }
     }, [tab.id, isActive, isReady, updateTitle, syncNavigationState])
 
-    // Sync state when becoming active
+    // Sync state when becoming active (zoom is handled by useWebviewNavigation)
     useEffect(() => {
         if (isActive && isReady) {
             syncNavigationState()
+            // Apply current zoom level when switching to this tab
+            const webview = webviewRef.current
+            const currentZoom = useAppStore.getState().globalZoomLevel
+            if (webview && currentZoom !== 1.0) {
+                webview.setZoomFactor(currentZoom)
+            }
         }
     }, [isActive, isReady, syncNavigationState])
 
